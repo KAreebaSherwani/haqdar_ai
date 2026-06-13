@@ -35,7 +35,7 @@ _QUESTIONS: dict[str, list[str]] = {
     "healthcare": [
         "کس ہسپتال یا کلینک میں یہ مسئلہ پیش آیا؟",
         "کیا یہ ایمرجنسی کی صورتحال تھی؟",
-        "واقعہ کب پیش آیا؟",
+        "واقعہ کب پیش آیا？",
     ],
     "utility": [
         "کون سا ادارہ ہے (بجلی، گیس، پانی)؟",
@@ -143,9 +143,9 @@ def detect_domain(text: str) -> str:
     tokens = {w.lower() for w in _words(text)}
     best, best_hits = "general", 0
     for domain, keywords in _DOMAIN_KEYWORDS.items():
-        hits = len(tokens & keywords)
-        if hits > best_hits:
-            best, best_hits = domain, hits
+        if hits := len(tokens & keywords):
+            if hits > best_hits:
+                best, best_hits = domain, hits
     return best
 
 
@@ -164,8 +164,8 @@ def _has_concrete_detail(complaint: str, tokens: set[str]) -> bool:
     return has_place or has_time or has_address
 
 
-def check(complaint: str) -> tuple[bool, str, list[str]]:
-    """Return (needs_more_info, detected_domain, questions).
+def check(complaint: str) -> tuple[bool, str, list[str], str | None]:
+    """Return (needs_more_info, detected_domain, questions, extracted_district).
 
     Asks for more info when the complaint is either too short OR lacks any
     concrete detail (no place and no time/date), so short-but-vague complaints
@@ -177,7 +177,11 @@ def check(complaint: str) -> tuple[bool, str, list[str]]:
 
     too_short = len(words) < _MIN_WORDS
     too_vague = (len(words) < 12) and not _has_concrete_detail(complaint, tokens)
+    
+    # Extract the district natively to pass along to the response pipeline
+    extracted_district = extract_district(complaint)
 
     if too_short or too_vague:
-        return True, domain, _QUESTIONS.get(domain, _QUESTIONS["general"])
-    return False, domain, []
+        return True, domain, _QUESTIONS.get(domain, _QUESTIONS["general"]), extracted_district
+        
+    return False, domain, [], extracted_district
