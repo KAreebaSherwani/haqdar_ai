@@ -1,0 +1,26 @@
+[project]
+name = "haqdar-backend"
+version = "1.0.0"
+description = "HaqDar AI - Pakistan's first AI legal rights assistant (backend)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "pydantic>=2.10",
+    "pydantic-settings>=2.7",
+    "google-genai>=1.16",
+    "chromadb>=1.0",
+    "fpdf2>=2.8",
+    "arabic-reshaper>=3.0",
+    "python-bidi>=0.6",
+    "python-dotenv>=1.0",
+    "psycopg[binary]>=3.2",
+    "psycopg-pool>=3.2",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
