@@ -12,14 +12,15 @@ from app.schemas.rights import RightsAnswer, RightsResponse
 from app.services.retrieval_service import retrieve
 
 
-async def explain_rights(scenario: str) -> RightsResponse:
+async def explain_rights(scenario: str, language: str = "Urdu") -> RightsResponse:
     settings = get_settings()
     request_id = str(uuid.uuid4())[:8]
     start = time.perf_counter()
 
     retrieval = retrieve(scenario)
     answer, model_used = await generate_structured(
-        build_rights_prompt(scenario, retrieval.context), RightsAnswer
+        build_rights_prompt(scenario, retrieval.context, response_language=language or "Urdu"),
+        RightsAnswer,
     )
     answer, citation_verified = enforce(answer)
 
