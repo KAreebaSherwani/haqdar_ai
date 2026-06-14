@@ -48,6 +48,8 @@ async def analyze_complaint(
     district: str | None = None,
     name: str | None = None,
     incident_date: str | None = None,
+    language: str = "Urdu",
+    letter_language: str = "Urdu",
 ) -> AnalyzeResponse | NeedsMoreInfoResponse:
     settings = get_settings()
     request_id = str(uuid.uuid4())[:8]
@@ -64,7 +66,7 @@ async def analyze_complaint(
 
     # Smart Triage Fallback: Auto-fill district using native script extraction if user left dropdown blank
     if not district or district.strip().lower() == "unknown":
-        district = extracted_district if extracted_district else "Punjab"
+        district = extracted_district if extracted_district else None
 
     # 2. Retrieve grounding context (RAG primary, inclusion fallback)
     retrieval = retrieve(complaint)
@@ -81,6 +83,8 @@ async def analyze_complaint(
                 district=district,  # Pipes sanitized district info to anchor prompt generation
                 name=name,
                 incident_date=incident_date,
+                response_language=language or "Urdu",
+                letter_language=letter_language or "Urdu",
             ),
             ComplaintAnalysis,
         )

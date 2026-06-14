@@ -19,7 +19,7 @@ logger = logging.getLogger("haqdar.verifier")
 # Alias keywords let the verifier match the model's phrasing to a verified law.
 _ALIASES: dict[str, list[str]] = {
     "Punjab Police Rules 2017": ["police rules", "punjab police"],
-    "(Punjab) Consumer Protection Act 2005": ["consumer protection"],
+    "Punjab Consumer Protection Act 2005": ["consumer protection"],
     "Right of Access to Information Act 2017": ["access to information", "right of access"],
     "Punjab Transparency and Right to Information Act 2013": ["transparency and right"],
     "Labour laws (Industrial Relations Act 2012; minimum wage notifications)": [

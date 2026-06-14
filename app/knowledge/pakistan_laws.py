@@ -32,7 +32,7 @@ LAW_PROVISIONS: list[dict] = [
     {
         "id": "consumer-overcharge",
         "domain": "consumer",
-        "law": "(Punjab) Consumer Protection Act 2005",
+        "law": "Punjab Consumer Protection Act 2005",
         "provision": "Traders may not charge above the displayed or notified price; consumers are entitled to refund or compensation for defective goods or services.",
         "authority": "District Consumer Court / Consumer Protection Council.",
         "authority_contact": "District Consumer Court (district courts complex). Punjab portal: dpc.punjab.gov.pk.",
@@ -45,6 +45,15 @@ LAW_PROVISIONS: list[dict] = [
         "provision": "Every citizen has the right to information held by federal public bodies, normally within 10 working days of a written request; refusal must be in writing with reasons.",
         "authority": "Pakistan Information Commission (PIC), Islamabad. For Punjab bodies: Punjab Information Commission under the Punjab Transparency and RTI Act 2013.",
         "authority_contact": "Pakistan Information Commission: rti.gov.pk. Punjab Information Commission: pic.punjab.gov.pk.",
+        "last_reviewed": "2026-06-10",
+    },
+    {
+        "id": "rti-access-punjab",
+        "domain": "rti",
+        "law": "Punjab Transparency and Right to Information Act 2013",
+        "provision": "Every citizen has the right to information held by Punjab public bodies; the designated officer must respond, normally within 14 working days, and any refusal must be in writing with reasons and is appealable to the Punjab Information Commission.",
+        "authority": "Punjab Information Commission.",
+        "authority_contact": "Punjab Information Commission: pic.punjab.gov.pk.",
         "last_reviewed": "2026-06-10",
     },
     {
