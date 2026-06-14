@@ -41,11 +41,13 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    # 🌟 Flawless CORS configuration for production and local testing
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.origins_list,
+        allow_origin_regex=r"https://.*\.vercel\.app",  # Safely allow dynamic frontend preview URLs
         allow_credentials=True,
-        allow_methods=["GET", "POST"],
+        allow_methods=["GET", "POST", "OPTIONS"],       # Allows required preflight handshakes
         allow_headers=["*"],
     )
 
