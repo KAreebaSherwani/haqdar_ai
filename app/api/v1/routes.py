@@ -32,7 +32,7 @@ async def analyze(req: ComplaintRequest) -> AnalyzeResponse | NeedsMoreInfoRespo
     """Citizen complaint -> full legal action package."""
     complaint = _guard(req.complaint)
     try:
-        return await analyze_complaint(complaint, req.district, req.name, req.incident_date)
+        return await analyze_complaint(complaint, req.district, req.name, req.incident_date, req.language, req.letter_language)
     except HTTPException:
         raise
     except Exception:
@@ -47,7 +47,7 @@ async def rights(req: RightsRequest) -> RightsResponse:
     """Scenario -> rights education answer."""
     scenario = _guard(req.scenario)
     try:
-        return await explain_rights(scenario)
+        return await explain_rights(scenario, req.language)
     except HTTPException:
         raise
     except Exception:

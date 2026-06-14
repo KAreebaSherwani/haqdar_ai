@@ -28,6 +28,8 @@ class ComplaintRequest(BaseModel):
     district: str | None = Field(default=None, max_length=50, description="Optional, personalizes the letter + anonymous civic map")
     name: str | None = Field(default=None, max_length=80, description="Optional, fills the letter signature (never stored)")
     incident_date: str | None = Field(default=None, max_length=30, description="Optional incident date for the letter (never stored)")
+    language: str = Field(default="Urdu", max_length=20, description="Guidance language (Urdu, English, Punjabi, Sindhi, Pashto). The formal letter always stays Urdu.")
+    letter_language: str = Field(default="Urdu", max_length=10, description="Formal complaint letter language: 'Urdu' or 'English' (the document languages Pakistani authorities accept).")
 
 
 class ComplaintAnalysis(BaseModel):

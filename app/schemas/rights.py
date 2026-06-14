@@ -7,6 +7,7 @@ from app.schemas.complaint import ResponseMeta
 
 class RightsRequest(BaseModel):
     scenario: str = Field(min_length=3, max_length=2000)
+    language: str = Field(default="Urdu", max_length=20, description="Guidance language (Urdu, English, Punjabi, Sindhi, Pashto).")
 
 
 class RightsAnswer(BaseModel):
