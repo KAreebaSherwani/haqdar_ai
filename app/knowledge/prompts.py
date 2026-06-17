@@ -55,6 +55,8 @@ each element on its own line:
   شناختی کارڈ نمبر: ____________________
   رابطہ نمبر: ____________________
 
+- CRITICAL: If {letter_language} is Urdu and citizen details (such as the name "{name_clause}") are in English/Latin script, you MUST transliterate them into proper Urdu script (e.g., "Muhammad AbdulJabbar" -> "محمد عبدالجبار"). Do not use English characters in the Urdu letter body or signature block.
+
 If {letter_language} is English, write the formal equivalent, each on its own line:
   Reference No: {reference_id}
   Date: {letter_date}
