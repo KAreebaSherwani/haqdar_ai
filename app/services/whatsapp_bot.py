@@ -87,6 +87,7 @@ GREETING = (
     "\u200eWe're with you."
 )
 
+
 # ---- Fixed UI lines, per language -------------------------------------------
 def _ack(lang: str) -> str:
     if lang == "Urdu":
@@ -136,21 +137,36 @@ def _fill_note(lang: str, fields: list[str]) -> str:
 
 # ---- Guidance formatter (the AI answer, user's language) --------------------
 def _format_guidance(resp, lang: str) -> str:
-    """resp is an AnalyzeResponse. Build a scannable WhatsApp message."""
+    """resp can be an AnalyzeResponse or a NeedsMoreInfoResponse. Build a scannable WhatsApp message."""
+    
+    # 1. Polymorphic Triage: Handle missing properties if the engine returned a 'Needs More Info' payload
+    if type(resp).__name__ == "NeedsMoreInfoResponse" or not hasattr(resp, "citizen_rights"):
+        message = getattr(resp, "message", "We need a bit more context to process your request.")
+        questions = getattr(resp, "clarifying_questions", []) or getattr(resp, "questions", [])
+        
+        if questions:
+            formatted_qs = "\n".join(f"❓ {q}" for q in questions)
+            return f"👋 {message}\n\n{formatted_qs}"
+        return f"👋 {message}"
+
+    # 2. Complete Processing State: Compile full structured diagnostic response
     if lang == "Urdu":
         intro = "*آپ کے پاس مضبوط قانونی حق موجود ہے۔*"
         L = ("📋 *آپ کا حق*", "⚖️ *متعلقہ قانون*", "🏛️ *کہاں رجوع کریں*", "✅ *اگلے اقدامات*")
     else:
         intro = "*You have a strong legal right here.*"
         L = ("📋 *Your Right*", "⚖️ *The Law*", "🏛️ *Where to Go*", "✅ *Next Steps*")
-    steps = "\n".join(f"{i+1}. {s}" for i, s in enumerate(resp.next_steps or []))
+        
+    next_steps_list = getattr(resp, 'next_steps', None) or []
+    steps = "\n".join(f"{i+1}. {s}" for i, s in enumerate(next_steps_list))
+    
     parts = [
         intro, "",
-        f"{L[0]}\n{resp.citizen_rights}", "",
-        f"{L[1]}\n{resp.law_reference}", "",
-        f"{L[2]}\n{resp.responsible_authority}", "",
+        f"{L[0]}\n{getattr(resp, 'citizen_rights', '')}", "",
+        f"{L[1]}\n{getattr(resp, 'law_reference', '')}", "",
+        f"{L[2]}\n{getattr(resp, 'responsible_authority', '')}", "",
         f"{L[3]}\n{steps}", "",
-        f"🔖 Reference: {resp.reference_id}",
+        f"🔖 Reference: {getattr(resp, 'reference_id', 'N/A')}",
     ]
     return "\n".join(parts)
 
@@ -232,8 +248,8 @@ async def handle_message(phone: str, text: str) -> str:
 
 
 async def _new_complaint(phone: str, text: str) -> str:
-    lang = detect_language(text)
-    _save(phone, language=lang, complaint=text)
+    bytes_lang = detect_language(text)
+    _save(phone, language=bytes_lang, complaint=text)
     # Acknowledge + run. (The ack is returned together with guidance below; on a
     # real webhook you may send ack first, then the guidance as a second message.)
     return await _run_pipeline(phone, text)
