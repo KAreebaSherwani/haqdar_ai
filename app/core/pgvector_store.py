@@ -36,7 +36,17 @@ def init_store() -> None:
             
         _pool = ConnectionPool(conninfo=settings.database_url, min_size=1, max_size=5)
         import os
-        cred_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "haqdar-ai-499713-595c09d7a539.json")
+        cred_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "haqdar-ai-499713-ed95f62142e4.json")
+        
+        # Fallback: if credentials file does not exist, check if GCP_SERVICE_ACCOUNT_JSON env var is set
+        if not os.path.exists(cred_path) and os.environ.get("GCP_SERVICE_ACCOUNT_JSON"):
+            logger.info("Credentials file not found on disk. Recreating from GCP_SERVICE_ACCOUNT_JSON env var...")
+            try:
+                with open(cred_path, "w") as f:
+                    f.write(os.environ["GCP_SERVICE_ACCOUNT_JSON"])
+            except Exception as e:
+                logger.error("Failed to write GCP_SERVICE_ACCOUNT_JSON to file: %s", e)
+                
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
         
         _client = genai.Client(vertexai=True, project="haqdar-ai-499713", location="us-central1")

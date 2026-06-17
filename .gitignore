@@ -6,3 +6,4 @@ chroma_store/
 .venv/
 venv/
 .ruff_cache/
+*.json
