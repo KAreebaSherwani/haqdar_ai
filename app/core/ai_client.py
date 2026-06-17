@@ -87,7 +87,8 @@ async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -> 
     instruction = (
         "Transcribe this audio to text exactly as spoken. The speaker may be using "
         "Urdu, English, Punjabi, Sindhi, or Pashto. Output ONLY the transcribed words in the original language "
-        "and script, with no translation, no labels, and no extra commentary."
+        "using Shahmukhi/Arabic-based script (do NOT use Indian scripts like Gurmukhi or Devanagari for Punjabi or Sindhi). "
+        "Output no translation, no labels, and no extra commentary."
     )
 
     last_error = None
