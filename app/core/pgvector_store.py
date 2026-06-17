@@ -36,8 +36,12 @@ def init_store() -> None:
             return
             
         _pool = ConnectionPool(conninfo=settings.database_url, min_size=1, max_size=5)
-        # Use standard Developer API Key configuration for the Gemini Client
-        _client = genai.Client(api_key=settings.gemini_api_key)
+        
+        import os
+        cred_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "haqdar-ai-499713-595c09d7a539.json")
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
+        
+        _client = genai.Client(vertexai=True, project="haqdar-ai-499713", location="us-central1")
         
         # Test connection
         with _pool.connection() as conn:
@@ -45,7 +49,7 @@ def init_store() -> None:
                 cur.execute("SELECT 1")
                 
         _ready = True
-        logger.info("Supabase pgvector store connected and ready.")
+        logger.info("Supabase pgvector store connected and ready with Vertex AI client.")
     except Exception as exc:  # noqa: BLE001
         logger.warning("pgvector store init failed: %s — retrieval will fall back", exc)
         _ready = False

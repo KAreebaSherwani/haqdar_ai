@@ -1,6 +1,6 @@
 """API v1 routers: /analyze, /rights, /stats, /health."""
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
 
@@ -171,3 +171,45 @@ def health() -> dict:
         "vector_store_ready": vector_store.is_ready(),
         "db_version": s.db_version,
     }
+
+
+@router.post("/transcribe", tags=["core"])
+async def transcribe(audio: UploadFile) -> dict:
+    """Transcribe raw audio bytes using Gemini multimodal audio model."""
+    if not audio:
+        raise HTTPException(status_code=400, detail="No audio file uploaded")
+    try:
+        audio_bytes = await audio.read()
+        mime_type = audio.content_type
+        
+        from google.genai import types
+        from app.core.ai_client import get_client
+        import asyncio
+
+        client = get_client()
+        config = types.GenerateContentConfig(
+            temperature=0.0,
+        )
+        prompt = (
+            "Transcribe this audio verbatim in its native script (Urdu, Punjabi, Sindhi, or English). "
+            "Do not translate. Output ONLY the transcription and nothing else."
+        )
+        
+        response = await asyncio.to_thread(
+            client.models.generate_content,
+            model=get_settings().fallback_model,
+            contents=[
+                prompt,
+                types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
+            ],
+            config=config,
+        )
+        text = response.text.strip()
+        return {"text": text}
+    except Exception as exc:
+        import logging
+        logging.getLogger("haqdar.api").error("audio transcription failed: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="صوتی شناخت عارضی طور پر دستیاب نہیں۔ دوبارہ کوشش کریں۔",
+        ) from exc

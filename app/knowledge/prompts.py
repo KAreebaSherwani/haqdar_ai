@@ -135,10 +135,13 @@ def build_complaint_prompt(
 ) -> str:
     district_clause = f"، {district}" if district else ""
     district_clause_en = f", {district}" if district else ""
+    
     if letter_language == "Urdu" and name:
-        name_clause = f"[transliterate the English name '{name}' into proper Urdu script]"
+        # Pass name to the LLM with an explicit instruction to transliterate it to Urdu script
+        name_clause = f"{name} (MUST be transliterated and written in Urdu script, e.g. 'Muhammad Ali' -> 'محمد علی')"
     else:
         name_clause = name if name else "[آپ کا نام]"
+        
     name_clause_en = name if name else "[Your Name]"
     return COMPLAINT_PROMPT.format(
         laws_context=laws_context,
