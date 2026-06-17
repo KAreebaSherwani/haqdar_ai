@@ -73,6 +73,49 @@ async def generate_structured(prompt: str, schema: type[BaseModel]) -> tuple[Bas
     raise AIUnavailableError(str(last_error))
 
 
+async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -> str:
+    """Transcribe a voice note to text using Gemini audio understanding.
+
+    Shared by the website audio feature and WhatsApp voice notes. Returns the
+    transcribed text in the spoken language (Urdu or English). Raises
+    AIUnavailableError on total failure so the caller can ask the user to type.
+    """
+    settings = get_settings()
+    if not settings.gemini_api_key:
+        raise AIUnavailableError("GEMINI_API_KEY not configured")
+
+    instruction = (
+        "Transcribe this audio to text exactly as spoken. The speaker may be using "
+        "Urdu or English. Output ONLY the transcribed words in the original language, "
+        "with no translation, no labels, and no extra commentary."
+    )
+
+    last_error = None
+    for model_name in (settings.primary_model, settings.fallback_model):
+        try:
+            client = get_client()
+            response = await asyncio.wait_for(
+                asyncio.to_thread(
+                    client.models.generate_content,
+                    model=model_name,
+                    contents=[
+                        types.Part.from_bytes(data=audio_bytes, mime_type=mime_type),
+                        instruction,
+                    ],
+                ),
+                timeout=40,
+            )
+            text = (response.text or "").strip()
+            if text:
+                logger.info("transcription model=%s ok (%d chars)", model_name, len(text))
+                return text
+        except Exception as exc:
+            last_error = exc
+            logger.warning("transcription model=%s failed: %s", model_name, exc)
+
+    raise AIUnavailableError("transcription failed: %s" % last_error)
+
+
 def warm_up() -> None:
     """Tiny call at startup so the first real request isn't also the first handshake."""
     try:

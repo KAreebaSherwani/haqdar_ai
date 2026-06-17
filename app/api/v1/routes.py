@@ -1,6 +1,6 @@
 """API v1 routers: /analyze, /rights, /stats, /health."""
 
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
 
@@ -123,6 +123,38 @@ async def whatsapp_webhook(request: Request) -> Response:
     body = (form.get("Body") or "").strip()
     sender = form.get("From") or form.get("WaId") or "unknown"
 
+    # Voice note? Twilio sends NumMedia >= 1 with a MediaUrl. Download and
+    # transcribe it (Urdu/English) so the rest of the flow treats it as text.
+    try:
+        num_media = int(form.get("NumMedia") or "0")
+    except (TypeError, ValueError):
+        num_media = 0
+    if num_media > 0 and not body:
+        media_url = form.get("MediaUrl0")
+        media_type = form.get("MediaContentType0") or "audio/ogg"
+        if media_url and media_type.startswith("audio"):
+            try:
+                import httpx
+
+                from app.core.ai_client import transcribe_audio
+
+                s = get_settings()
+                auth = (getattr(s, "twilio_account_sid", "") or "",
+                        getattr(s, "twilio_auth_token", "") or "")
+                async with httpx.AsyncClient(timeout=30) as hc:
+                    # Twilio media needs basic auth with your account SID/token
+                    r = await hc.get(media_url, auth=auth if auth[0] else None)
+                    r.raise_for_status()
+                    audio_bytes = r.content
+                body = await transcribe_audio(audio_bytes, mime_type=media_type)
+            except Exception:
+                # transcription failed -> ask them to type, never crash
+                from xml.sax.saxutils import escape as _esc
+                msg = ("معذرت، آواز سمجھ نہیں آئی۔ براہ کرم اپنا مسئلہ ٹائپ کریں۔\n"
+                       "Sorry, I couldn't understand the voice note. Please type your problem.")
+                twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response><Message><Body>{_esc(msg)}</Body></Message></Response>"
+                return Response(content=twiml, media_type="application/xml")
+
     reply = await whatsapp_bot.handle_message(sender, body)
 
     media_url = None
@@ -159,6 +191,32 @@ async def whatsapp_webhook(request: Request) -> Response:
     return Response(content=twiml, media_type="application/xml")
 
 
+@router.post("/transcribe", tags=["core"])
+async def transcribe(audio: UploadFile = File(...)) -> dict:
+    """Transcribe an uploaded voice recording (Urdu/English) to text via Gemini.
+
+    Used by the website audio feature: the browser records audio and uploads it
+    here; the returned text can then be sent to /analyze. Keeps transcription
+    server-side so Urdu quality is consistent across all devices.
+    """
+    try:
+        data = await audio.read()
+        if not data:
+            raise HTTPException(status_code=400, detail="Empty audio")
+        from app.core.ai_client import transcribe_audio
+        mime = audio.content_type or "audio/ogg"
+        text = await transcribe_audio(data, mime_type=mime)
+        return {"text": text}
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=503,
+            detail="آواز کو متن میں تبدیل نہیں کیا جا سکا۔ براہ کرم ٹائپ کریں۔ "
+                   "(Could not transcribe audio — please type instead.)",
+        ) from None
+
+
 @router.get("/health", tags=["ops"])
 def health() -> dict:
     """Liveness check — also the keep-alive ping target."""
@@ -171,45 +229,3 @@ def health() -> dict:
         "vector_store_ready": vector_store.is_ready(),
         "db_version": s.db_version,
     }
-
-
-@router.post("/transcribe", tags=["core"])
-async def transcribe(audio: UploadFile) -> dict:
-    """Transcribe raw audio bytes using Gemini multimodal audio model."""
-    if not audio:
-        raise HTTPException(status_code=400, detail="No audio file uploaded")
-    try:
-        audio_bytes = await audio.read()
-        mime_type = audio.content_type
-        
-        from google.genai import types
-        from app.core.ai_client import get_client
-        import asyncio
-
-        client = get_client()
-        config = types.GenerateContentConfig(
-            temperature=0.0,
-        )
-        prompt = (
-            "Transcribe this audio verbatim in its native script (Urdu, Punjabi, Sindhi, or English). "
-            "Do not translate. Output ONLY the transcription and nothing else."
-        )
-        
-        response = await asyncio.to_thread(
-            client.models.generate_content,
-            model=get_settings().fallback_model,
-            contents=[
-                prompt,
-                types.Part.from_bytes(data=audio_bytes, mime_type=mime_type)
-            ],
-            config=config,
-        )
-        text = response.text.strip()
-        return {"text": text}
-    except Exception as exc:
-        import logging
-        logging.getLogger("haqdar.api").error("audio transcription failed: %s", exc)
-        raise HTTPException(
-            status_code=503,
-            detail="صوتی شناخت عارضی طور پر دستیاب نہیں۔ دوبارہ کوشش کریں۔",
-        ) from exc
