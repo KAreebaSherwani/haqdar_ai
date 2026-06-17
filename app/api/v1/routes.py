@@ -123,43 +123,41 @@ async def whatsapp_webhook(request: Request) -> Response:
     body = (form.get("Body") or "").strip()
     sender = form.get("From") or form.get("WaId") or "unknown"
 
-    # Voice note? Twilio sends NumMedia >= 1 with a MediaUrl. Download and
-    # transcribe it (Urdu/English) so the rest of the flow treats it as text.
+    # Voice note processing
     try:
         num_media = int(form.get("NumMedia") or "0")
     except (TypeError, ValueError):
         num_media = 0
+        
     if num_media > 0 and not body:
         media_url = form.get("MediaUrl0")
         media_type = form.get("MediaContentType0") or "audio/ogg"
         if media_url and media_type.startswith("audio"):
             try:
                 import httpx
-
                 from app.core.ai_client import transcribe_audio
 
                 s = get_settings()
                 auth = (getattr(s, "twilio_account_sid", "") or "",
                         getattr(s, "twilio_auth_token", "") or "")
                 async with httpx.AsyncClient(timeout=30) as hc:
-                    # Twilio media needs basic auth with your account SID/token
                     r = await hc.get(media_url, auth=auth if auth[0] else None)
                     r.raise_for_status()
                     audio_bytes = r.content
                 body = await transcribe_audio(audio_bytes, mime_type=media_type)
             except Exception:
-                # transcription failed -> ask them to type, never crash
                 from xml.sax.saxutils import escape as _esc
                 msg = ("معذرت، آواز سمجھ نہیں آئی۔ براہ کرم اپنا مسئلہ ٹائپ کریں۔\n"
                        "Sorry, I couldn't understand the voice note. Please type your problem.")
                 twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response><Message><Body>{_esc(msg)}</Body></Message></Response>"
                 return Response(content=twiml, media_type="application/xml")
 
+    # Await the pipeline handler cleanly
     reply = await whatsapp_bot.handle_message(sender, body)
 
-    media_url = None
+    # Cleanly unpack if the awaited execution returns our data tuple
+    media_url_out = None
     if isinstance(reply, tuple):
-        # PDF was requested: (note_text, full AnalyzeResponse)
         note, full = reply
         reply_text = note
         try:
@@ -176,29 +174,26 @@ async def whatsapp_webhook(request: Request) -> Response:
             fname = f"{full.reference_id}.pdf"
             with open(f"/tmp/haqdar_pdfs/{fname}", "wb") as f:
                 f.write(pdf_bytes)
-            media_url = f"{s.public_base_url.rstrip('/')}/files/{fname}"
-        except Exception:  # never fail the reply over a PDF error
+            media_url_out = f"{s.public_base_url.rstrip('/')}/files/{fname}"
+        except Exception:
             reply_text = note + "\n\n(درخواست بنانے میں مسئلہ ہوا — دوبارہ کوشش کریں / "
             reply_text += "Could not generate the PDF — please try again.)"
     else:
         reply_text = reply
 
-    msg = f"<Message><Body>{escape(reply_text)}</Body>"
-    if media_url:
-        msg += f"<Media>{escape(media_url)}</Media>"
+    # Format the explicit TwiML XML payload response instructions back to Twilio
+    msg = f"<Message><Body>{escape(str(reply_text))}</Body>"
+    if media_url_out:
+        msg += f"<Media>{escape(str(media_url_out))}</Media>"
     msg += "</Message>"
+    
     twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response>{msg}</Response>"
     return Response(content=twiml, media_type="application/xml")
 
 
 @router.post("/transcribe", tags=["core"])
 async def transcribe(audio: UploadFile = File(...)) -> dict:
-    """Transcribe an uploaded voice recording (Urdu/English) to text via Gemini.
-
-    Used by the website audio feature: the browser records audio and uploads it
-    here; the returned text can then be sent to /analyze. Keeps transcription
-    server-side so Urdu quality is consistent across all devices.
-    """
+    """Transcribe an uploaded voice recording (Urdu/English) to text via Gemini."""
     try:
         data = await audio.read()
         if not data:
