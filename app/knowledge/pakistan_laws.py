@@ -129,11 +129,13 @@ def all_law_names() -> set[str]:
 def build_context(provisions: list[dict]) -> str:
     lines = ["VERIFIED PAKISTANI LAW REFERENCE — cite ONLY from these entries:\n"]
     for p in provisions:
+        source_tag = p.get('source', 'AI')
         lines.append(
             f"- Law: {p['law']}\n"
             f"  Provision: {p['provision']}\n"
             f"  Responsible authority: {p['authority']}\n"
             f"  Contact: {p['authority_contact']}\n"
+            f"  Source: {source_tag}\n"
         )
     lines.append(
         "\nGUIDANCE: clear match -> confidence 'high'. Partial match or missing facts -> "

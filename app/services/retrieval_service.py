@@ -10,7 +10,7 @@ import logging
 from dataclasses import dataclass
 
 from app.core.config import get_settings
-from app.core import vector_store
+from app.core import pgvector_store
 from app.knowledge.pakistan_laws import LAW_PROVISIONS, LAWS_CONTEXT, build_context
 
 logger = logging.getLogger("haqdar.retrieval")
@@ -26,9 +26,9 @@ class Retrieval:
 
 def retrieve(complaint: str) -> Retrieval:
     settings = get_settings()
-    if settings.use_vector_store and vector_store.is_ready():
+    if settings.use_vector_store and pgvector_store.is_ready():
         try:
-            provisions, score = vector_store.search(complaint, settings.retrieval_top_k)
+            provisions, score = pgvector_store.search(complaint, settings.retrieval_top_k)
             if provisions and score >= settings.retrieval_min_score:
                 return Retrieval(build_context(provisions), "vector", score, provisions)
             logger.info("weak retrieval (score=%.2f) -> inclusion fallback", score)

@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from app.api.v1.routes import router as v1_router
 from app.core.ai_client import warm_up
 from app.core.config import get_settings
-from app.core.vector_store import init_store
+from app.core.pgvector_store import init_store
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
 logger = logging.getLogger("haqdar")
