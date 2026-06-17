@@ -215,12 +215,23 @@ async def transcribe(audio: UploadFile = File(...)) -> dict:
 @router.get("/health", tags=["ops"])
 def health() -> dict:
     """Liveness check — also the keep-alive ping target."""
+    import os
+    from app.core import pgvector_store
+    
     s = get_settings()
+    gcp_creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    gcp_creds_exists = os.path.exists(gcp_creds_path) if gcp_creds_path else False
+    
     return {
         "status": "online",
         "service": s.app_name,
         "primary_model": s.primary_model,
         "fallback_model": s.fallback_model,
         "vector_store_ready": vector_store.is_ready(),
+        "pgvector_store_ready": pgvector_store.is_ready(),
+        "pgvector_store_error": pgvector_store.get_init_error(),
+        "gemini_api_key_configured": bool(s.gemini_api_key),
+        "gcp_credentials_path": gcp_creds_path,
+        "gcp_credentials_exists": gcp_creds_exists,
         "db_version": s.db_version,
     }

@@ -17,13 +17,17 @@ logger = logging.getLogger("haqdar.pgvector")
 _pool: ConnectionPool | None = None
 _client = None
 _ready = False
+_init_error: str | None = None
 
 def is_ready() -> bool:
     return _ready
 
+def get_init_error() -> str | None:
+    return _init_error
+
 def init_store() -> None:
     """Initialize the connection pool and Vertex AI client."""
-    global _pool, _client, _ready
+    global _pool, _client, _ready, _init_error
     settings = get_settings()
     if not settings.use_vector_store:
         logger.info("pgvector store disabled by config")
@@ -32,6 +36,7 @@ def init_store() -> None:
     try:
         if not settings.database_url:
             logger.error("database_url not provided, cannot connect to Supabase.")
+            _init_error = "database_url not provided"
             return
             
         _pool = ConnectionPool(conninfo=settings.database_url, min_size=1, max_size=5)
@@ -65,10 +70,12 @@ def init_store() -> None:
                 cur.execute("SELECT 1")
                 
         _ready = True
+        _init_error = None
         logger.info("Supabase pgvector store connected and ready with Vertex AI client.")
     except Exception as exc:  # noqa: BLE001
         logger.warning("pgvector store init failed: %s — retrieval will fall back", exc)
         _ready = False
+        _init_error = str(exc)
 
 def search(query: str, top_k: int) -> tuple[list[dict], float]:
     """Return (matched provisions, top_score in 0..1). Raises if store not ready."""
