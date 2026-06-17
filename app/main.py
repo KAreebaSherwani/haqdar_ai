@@ -70,6 +70,15 @@ def create_app() -> FastAPI:
 
     app.include_router(v1_router, prefix=settings.api_prefix)
 
+    # Serve generated WhatsApp PDFs at /files/<name>.pdf so Twilio can fetch them
+    # as media. Files are written by the /whatsapp webhook into this directory.
+    import os
+    from fastapi.staticfiles import StaticFiles
+
+    _pdf_dir = "/tmp/haqdar_pdfs"
+    os.makedirs(_pdf_dir, exist_ok=True)
+    app.mount("/files", StaticFiles(directory=_pdf_dir), name="files")
+
     @app.get("/", tags=["ops"])
     def root() -> dict:
         return {"service": "HaqDar AI — حق دار", "docs": "/docs", "api": settings.api_prefix}

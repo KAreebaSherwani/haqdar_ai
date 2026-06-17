@@ -50,6 +50,16 @@ class ComplaintAnalysis(BaseModel):
     citizen_rights: str = Field(description="2-3 rights the citizen has, in plain Urdu")
     evidence_to_collect: list[str] = Field(description="3-4 pieces of evidence to gather, in Urdu")
     next_steps: list[str] = Field(description="Exactly 3 action steps in Urdu")
+    fields_to_fill: list[str] = Field(
+        default_factory=list,
+        description=(
+            "The blanks the citizen must complete on the printed letter, in the "
+            "guidance language. ALWAYS include signature, name, and CNIC. ALSO include "
+            "any case-specific detail that was missing from the complaint and left blank "
+            "in the letter (e.g. the institution name, the exact date). Do NOT list "
+            "details that were already provided."
+        ),
+    )
     sdg_alignment: SdgAlignment
 
 

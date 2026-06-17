@@ -1,6 +1,6 @@
 """API v1 routers: /analyze, /rights, /stats, /health."""
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel
 
@@ -107,6 +107,56 @@ def report_lookup(reference_id: str) -> dict:
     if not found:
         raise HTTPException(status_code=404, detail="Reference not found")
     return found
+
+
+@router.post("/whatsapp", tags=["whatsapp"])
+async def whatsapp_webhook(request: Request) -> Response:
+    """Twilio WhatsApp webhook. Runs the bot, and when the user picks a PDF,
+    generates it, saves it to the public /files dir, and delivers it as media."""
+    import os
+    from datetime import date
+    from xml.sax.saxutils import escape
+
+    from app.services import whatsapp_bot
+
+    form = await request.form()
+    body = (form.get("Body") or "").strip()
+    sender = form.get("From") or form.get("WaId") or "unknown"
+
+    reply = await whatsapp_bot.handle_message(sender, body)
+
+    media_url = None
+    if isinstance(reply, tuple):
+        # PDF was requested: (note_text, full AnalyzeResponse)
+        note, full = reply
+        reply_text = note
+        try:
+            s = get_settings()
+            pdf_bytes = build_letter_pdf(
+                reference_id=full.reference_id,
+                complaint_letter=full.complaint_letter,
+                law_reference=full.law_reference,
+                authority=full.responsible_authority,
+                db_version=s.db_version,
+                generated_date=date.today().isoformat(),
+            )
+            os.makedirs("/tmp/haqdar_pdfs", exist_ok=True)
+            fname = f"{full.reference_id}.pdf"
+            with open(f"/tmp/haqdar_pdfs/{fname}", "wb") as f:
+                f.write(pdf_bytes)
+            media_url = f"{s.public_base_url.rstrip('/')}/files/{fname}"
+        except Exception:  # never fail the reply over a PDF error
+            reply_text = note + "\n\n(درخواست بنانے میں مسئلہ ہوا — دوبارہ کوشش کریں / "
+            reply_text += "Could not generate the PDF — please try again.)"
+    else:
+        reply_text = reply
+
+    msg = f"<Message><Body>{escape(reply_text)}</Body>"
+    if media_url:
+        msg += f"<Media>{escape(media_url)}</Media>"
+    msg += "</Message>"
+    twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response>{msg}</Response>"
+    return Response(content=twiml, media_type="application/xml")
 
 
 @router.get("/health", tags=["ops"])

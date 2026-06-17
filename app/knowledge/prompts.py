@@ -50,7 +50,10 @@ each element on its own line:
    as the applicant (سائلہ/سائل), referencing the relevant verified law]
   [a clear demand: investigation, action against responsible parties, written reply]
   والسلام،
-  {name_clause}
+  دستخط: ____________________
+  نام: {name_clause}
+  شناختی کارڈ نمبر: ____________________
+  رابطہ نمبر: ____________________
 
 If {letter_language} is English, write the formal equivalent, each on its own line:
   Reference No: {reference_id}
@@ -63,7 +66,10 @@ If {letter_language} is English, write the formal equivalent, each on its own li
    "warrants further inquiry under" — never declaring guilt as fact]
   [a clear demand: investigation, action, and a written reply to the applicant]
   Yours faithfully,
-  {name_clause_en}
+  Signature: ____________________
+  Name: {name_clause_en}
+  CNIC No: ____________________
+  Contact No: ____________________
 
 - If a district is provided, address the authority WITH the district.
 - Use the citizen's name and incident date where provided; otherwise use the
