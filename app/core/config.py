@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Public base URL of THIS server (e.g. https://haqdar-ai.onrender.com).
     # Used to build absolute links to generated PDFs so Twilio can fetch them.
     public_base_url: str = "https://haqdar-ai.onrender.com"
+    # Twilio creds — needed to download WhatsApp voice-note media.
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
 
     # RAG / retrieval
     use_vector_store: bool = True

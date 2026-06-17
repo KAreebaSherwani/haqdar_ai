@@ -73,9 +73,6 @@ class ResponseMeta(BaseModel):
     top_score: float = 1.0
     db_version: str = "June 2026"
     last_legal_review: str = "2026-06-10"
-    used_rag: bool = False
-    rag_context: str | None = None
-    grounding_sources_count: int = 0
 
 
 class RelevantLaw(BaseModel):

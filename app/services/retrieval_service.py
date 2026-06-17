@@ -26,27 +26,13 @@ class Retrieval:
 
 def retrieve(complaint: str) -> Retrieval:
     settings = get_settings()
-    # Always include the core baseline hand-verified laws
-    provisions = list(LAW_PROVISIONS)
-    source = "inclusion"
-    score = 1.0
-
     if settings.use_vector_store and pgvector_store.is_ready():
         try:
-            db_provisions, search_score = pgvector_store.search(complaint, settings.retrieval_top_k)
-            if db_provisions and search_score >= settings.retrieval_min_score:
-                source = "vector"
-                score = search_score
-                # Deduplicate based on lowercased law name
-                seen_laws = {p["law"].lower().strip() for p in provisions}
-                for db_p in db_provisions:
-                    law_name = db_p["law"].lower().strip()
-                    if law_name not in seen_laws:
-                        seen_laws.add(law_name)
-                        provisions.append(db_p)
-            else:
-                logger.info("weak retrieval (score=%.2f) -> fallback to core baseline only", search_score)
+            provisions, score = pgvector_store.search(complaint, settings.retrieval_top_k)
+            if provisions and score >= settings.retrieval_min_score:
+                return Retrieval(build_context(provisions), "vector", score, provisions)
+            logger.info("weak retrieval (score=%.2f) -> inclusion fallback", score)
         except Exception as exc:  # noqa: BLE001
-            logger.warning("retrieval failed: %s -> fallback to core baseline only", exc)
+            logger.warning("retrieval failed: %s -> inclusion fallback", exc)
 
-    return Retrieval(build_context(provisions), source, score, provisions)
+    return Retrieval(LAWS_CONTEXT, "inclusion", 1.0, LAW_PROVISIONS)

@@ -55,8 +55,6 @@ each element on its own line:
   شناختی کارڈ نمبر: ____________________
   رابطہ نمبر: ____________________
 
-- CRITICAL: If {letter_language} is Urdu and citizen details (such as the name "{name_clause}") are in English/Latin script, you MUST transliterate them into proper Urdu script (e.g., "Muhammad AbdulJabbar" -> "محمد عبدالجبار"). Do not use English characters in the Urdu letter body or signature block.
-
 If {letter_language} is English, write the formal equivalent, each on its own line:
   Reference No: {reference_id}
   Date: {letter_date}
@@ -135,10 +133,7 @@ def build_complaint_prompt(
 ) -> str:
     district_clause = f"، {district}" if district else ""
     district_clause_en = f", {district}" if district else ""
-    if letter_language == "Urdu" and name:
-        name_clause = f"[transliterate the English name '{name}' into proper Urdu script]"
-    else:
-        name_clause = name if name else "[آپ کا نام]"
+    name_clause = name if name else "[آپ کا نام]"
     name_clause_en = name if name else "[Your Name]"
     return COMPLAINT_PROMPT.format(
         laws_context=laws_context,

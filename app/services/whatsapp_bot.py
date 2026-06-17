@@ -81,10 +81,10 @@ GREETING = (
     "اپنا مسئلہ کسی بھی زبان میں لکھیں، یا وائس نوٹ بھیجیں۔\n"
     "ہم آپ کے ساتھ ہیں۔\n"
     "\n"
-    "Welcome to HaqDar AI 👋\n"
-    "You've come to the right place.\n"
-    "Share your problem in any language, or send a voice note.\n"
-    "We're with you."
+    "\u200eWelcome to HaqDar AI 👋\n"
+    "\u200eYou've come to the right place.\n"
+    "\u200eShare your problem in any language, or send a voice note.\n"
+    "\u200eWe're with you."
 )
 
 # ---- Fixed UI lines, per language -------------------------------------------
@@ -104,13 +104,19 @@ def _empty_prompt(lang: str) -> str:
 
 def _pdf_menu(lang: str) -> str:
     if lang == "Urdu":
-        head = "کیا آپ کو باقاعدہ درخواست چاہیے؟\nنیچے نمبر لکھ کر بھیجیں 👇"
-        no = "نہیں"
+        head = "*کیا آپ کو باقاعدہ درخواست چاہیے؟*\nنیچے نمبر لکھ کر بھیجیں 👇"
+        no = "No / نہیں"
     else:
-        head = "Would you like a formal petition?\nReply with the number 👇"
+        head = "*Would you like a formal petition?*\nReply with the number 👇"
         no = "No"
-    # numbers lead their own lines -> scramble-proof
-    return f"{head}\n\n1️⃣  Urdu PDF\n2️⃣  English PDF\n3️⃣  {no}"
+    # Each option line is wrapped in a Left-to-Right mark (\u200e) so the
+    # number stays glued to the LEFT of the label even inside an RTL message.
+    return (
+        f"{head}\n\n"
+        f"\u200e1\u20e3  Urdu PDF\n"
+        f"\u200e2\u20e3  English PDF\n"
+        f"\u200e3\u20e3  {no}"
+    )
 
 
 def _menu_fallback(lang: str) -> str:
@@ -132,11 +138,11 @@ def _fill_note(lang: str, fields: list[str]) -> str:
 def _format_guidance(resp, lang: str) -> str:
     """resp is an AnalyzeResponse. Build a scannable WhatsApp message."""
     if lang == "Urdu":
-        intro = "آپ کے پاس مضبوط قانونی حق موجود ہے۔"
-        L = ("📋 آپ کا حق", "⚖️ متعلقہ قانون", "🏛️ کہاں رجوع کریں", "✅ اگلے اقدامات")
+        intro = "*آپ کے پاس مضبوط قانونی حق موجود ہے۔*"
+        L = ("📋 *آپ کا حق*", "⚖️ *متعلقہ قانون*", "🏛️ *کہاں رجوع کریں*", "✅ *اگلے اقدامات*")
     else:
-        intro = "You have a strong legal right here."
-        L = ("📋 Your Right", "⚖️ The Law", "🏛️ Where to Go", "✅ Next Steps")
+        intro = "*You have a strong legal right here.*"
+        L = ("📋 *Your Right*", "⚖️ *The Law*", "🏛️ *Where to Go*", "✅ *Next Steps*")
     steps = "\n".join(f"{i+1}. {s}" for i, s in enumerate(resp.next_steps or []))
     parts = [
         intro, "",
