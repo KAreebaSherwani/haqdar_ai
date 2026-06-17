@@ -150,7 +150,7 @@ async def whatsapp_webhook(request: Request) -> Response:
                 msg = ("معذرت، آواز سمجھ نہیں آئی۔ براہ کرم اپنا مسئلہ ٹائپ کریں۔\n"
                        "Sorry, I couldn't understand the voice note. Please type your problem.")
                 twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response><Message><Body>{_esc(msg)}</Body></Message></Response>"
-                return Response(content=twiml, media_type="application/xml")
+                return Response(content=twiml, media_type="text/xml; charset=utf-8")
 
     # Await the pipeline handler cleanly
     reply = await whatsapp_bot.handle_message(sender, body)
@@ -188,7 +188,7 @@ async def whatsapp_webhook(request: Request) -> Response:
     msg += "</Message>"
     
     twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response>{msg}</Response>"
-    return Response(content=twiml, media_type="application/xml")
+    return Response(content=twiml, media_type="text/xml; charset=utf-8")
 
 
 @router.post("/transcribe", tags=["core"])
