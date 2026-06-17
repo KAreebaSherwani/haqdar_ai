@@ -145,5 +145,8 @@ async def analyze_complaint(
             citation_verified=citation_verified,
             retrieval_source=retrieval.source,
             top_score=round(retrieval.top_score, 3),
+            used_rag=(retrieval.source == "vector"),
+            rag_context=retrieval.context if retrieval.source == "vector" else None,
+            grounding_sources_count=len(retrieval.provisions),
         ),
     )
