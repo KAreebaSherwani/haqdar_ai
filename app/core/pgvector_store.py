@@ -56,7 +56,7 @@ def search(query: str, top_k: int) -> tuple[list[dict], float]:
         
     # Get embedding for the query
     response = _client.models.embed_content(
-        model='gemini-embedding-2',
+        model='text-embedding-004',
         contents=[query],
         config=types.EmbedContentConfig(output_dimensionality=768)
     )
