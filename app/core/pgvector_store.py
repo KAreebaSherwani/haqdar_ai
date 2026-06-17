@@ -36,7 +36,7 @@ def init_store() -> None:
             
         _pool = ConnectionPool(conninfo=settings.database_url, min_size=1, max_size=5)
         import os
-        cred_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "haqdar-ai-499713-595c09d7a539.json")
+        cred_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "haqdar-ai-499713-ed95f62142e4.json")
         os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = cred_path
         
         _client = genai.Client(vertexai=True, project="haqdar-ai-499713", location="us-central1")
