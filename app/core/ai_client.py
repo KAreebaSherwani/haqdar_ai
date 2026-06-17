@@ -73,7 +73,7 @@ async def generate_structured(prompt: str, schema: type[BaseModel]) -> tuple[Bas
     raise AIUnavailableError(str(last_error))
 
 
-async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -> str:
+async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg", language: str | None = None) -> str:
     """Transcribe a voice note to text using Gemini audio understanding.
 
     Shared by the website audio feature and WhatsApp voice notes. Returns the
@@ -84,9 +84,9 @@ async def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/ogg") -> 
     if not settings.gemini_api_key:
         raise AIUnavailableError("GEMINI_API_KEY not configured")
 
+    lang_clause = f"The speaker is speaking {language}. " if language else "The speaker may be using Urdu, English, Punjabi, Sindhi, or Pashto. "
     instruction = (
-        "Transcribe this audio to text exactly as spoken. The speaker may be using "
-        "Urdu, English, Punjabi, Sindhi, or Pashto. Output ONLY the transcribed words in the original language "
+        f"Transcribe this audio to text exactly as spoken. {lang_clause}Output ONLY the transcribed words in the original language "
         "using Shahmukhi/Arabic-based script (do NOT use Indian scripts like Gurmukhi or Devanagari for Punjabi or Sindhi). "
         "Output no translation, no labels, and no extra commentary."
     )

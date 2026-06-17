@@ -1,6 +1,6 @@
 """API v1 routers: /analyze, /rights, /stats, /health."""
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
 
@@ -192,8 +192,11 @@ async def whatsapp_webhook(request: Request) -> Response:
 
 
 @router.post("/transcribe", tags=["core"])
-async def transcribe(audio: UploadFile = File(...)) -> dict:
-    """Transcribe an uploaded voice recording (Urdu/English) to text via Gemini.
+async def transcribe(
+    audio: UploadFile = File(...),
+    language: str | None = Form(None)
+) -> dict:
+    """Transcribe an uploaded voice recording (Urdu/English/Regional) to text via Gemini.
 
     Used by the website audio feature: the browser records audio and uploads it
     here; the returned text can then be sent to /analyze. Keeps transcription
@@ -205,7 +208,7 @@ async def transcribe(audio: UploadFile = File(...)) -> dict:
             raise HTTPException(status_code=400, detail="Empty audio")
         from app.core.ai_client import transcribe_audio
         mime = audio.content_type or "audio/ogg"
-        text = await transcribe_audio(data, mime_type=mime)
+        text = await transcribe_audio(data, mime_type=mime, language=language)
         return {"text": text}
     except HTTPException:
         raise
