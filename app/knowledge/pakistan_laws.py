@@ -141,7 +141,7 @@ def all_law_names() -> set[str]:
 def build_context(provisions: list[dict]) -> str:
     lines = ["VERIFIED PAKISTANI LAW REFERENCE — cite ONLY from these entries:\n"]
     for p in provisions:
-        source_tag = p.get('source', 'AI')
+        source_tag = p.get("source", "AI")
         lines.append(
             f"- Law: {p['law']}\n"
             f"  Provision: {p['provision']}\n"
@@ -150,7 +150,10 @@ def build_context(provisions: list[dict]) -> str:
             f"  Source: {source_tag}\n"
         )
     lines.append(
-        "\nGUIDANCE: clear match -> confidence 'high'. Partial match or missing facts -> "
+        "\nNOTE ON RETRIEVAL: The provisions above were selected using semantic (cosine"
+        " similarity) search. They may not all be directly applicable to the complaint."
+        " Use your own judgment to determine which actually match the situation."
+        "\n\nGUIDANCE: clear match -> confidence 'high'. Partial match or missing facts -> "
         "'medium'. Outside these provisions (criminal violence, property/family disputes) -> "
         "'needs_verification' and recommend a lawyer or district free legal aid committee. "
         "NEVER invent a law name or section number."
