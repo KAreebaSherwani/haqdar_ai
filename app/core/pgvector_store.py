@@ -77,18 +77,30 @@ def init_store() -> None:
         _ready = False
         _init_error = str(exc)
 
-def search(query: str, top_k: int) -> tuple[list[dict], float]:
+def embed_texts(texts: list[str]) -> list[list[float]]:
+    """Embed a list of texts using the Vertex AI client."""
+    if not _ready or _client is None:
+        raise RuntimeError("pgvector store not ready")
+    response = _client.models.embed_content(
+        model='text-embedding-004',
+        contents=texts,
+        config=types.EmbedContentConfig(output_dimensionality=768)
+    )
+    return [emb.values for emb in response.embeddings]
+
+def search(query: str, top_k: int, q_emb: list[float] | None = None) -> tuple[list[dict], float]:
     """Return (matched provisions, top_score in 0..1). Raises if store not ready."""
     if not _ready or _pool is None or _client is None:
         raise RuntimeError("pgvector store not ready")
         
-    # Get embedding for the query
-    response = _client.models.embed_content(
-        model='text-embedding-004',
-        contents=[query],
-        config=types.EmbedContentConfig(output_dimensionality=768)
-    )
-    q_emb = response.embeddings[0].values
+    # Get embedding for the query if not provided
+    if q_emb is None:
+        response = _client.models.embed_content(
+            model='text-embedding-004',
+            contents=[query],
+            config=types.EmbedContentConfig(output_dimensionality=768)
+        )
+        q_emb = response.embeddings[0].values
     
     with _pool.connection() as conn:
         with conn.cursor() as cur:

@@ -110,11 +110,11 @@ async def analyze_complaint(
         analysis.confidence_score = "medium"
         confidence_key = "medium"
 
-    # 6. Multi-law surfacing with contacts, deduped by law
+    # 6. Multi-law surfacing with contacts, deduped by law (only return hand-verified "AI" laws to the frontend)
     seen: set[str] = set()
     relevant: list[RelevantLaw] = []
     for p in retrieval.provisions:
-        if p["law"] not in seen:
+        if p.get("source") == "AI" and p["law"] not in seen:
             seen.add(p["law"])
             relevant.append(RelevantLaw(
                 law=p["law"], authority=p["authority"], contact=p.get("authority_contact", ""),

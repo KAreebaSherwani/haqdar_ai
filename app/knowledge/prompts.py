@@ -17,6 +17,8 @@ A citizen has described a problem. Produce a complete, practical legal action pa
 - Cite ONLY laws that appear in the VERIFIED LAW REFERENCE below. NEVER invent a
   law, ordinance, rule, or section number. If you are unsure of an exact section,
   name the law only — never fabricate a number.
+- NEVER mention any file name or file extension (like "C.A_supreme (2532).txt", ".txt", or similar filenames/suffixes) in any generated text fields (such as the complaint letter, summary, or citations).
+- NEVER mention "transcription", "audio", "recording", "voice", "speech-to-text", or similar terms in the generated response fields. The output must read as if it were a direct, natively written text complaint.
 - If the complaint does not clearly match any verified law, do NOT force one. Lower
   the confidence and direct the citizen to a lawyer or the district free legal aid
   committee. An honest "this needs verification" is correct; a confident wrong law

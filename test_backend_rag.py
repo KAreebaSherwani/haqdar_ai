@@ -10,6 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.core import pgvector_store
 from app.core.config import get_settings
+from app.services.retrieval_service import retrieve
 
 def run_test():
     print("Initializing settings...")
@@ -30,19 +31,20 @@ def run_test():
     print("✅ pgvector store is ready.")
     
     query = "police ny rishwat mangee. mein ny nahi dee to maar parhee."
-    print(f"\nSearching database for query: '{query}'...")
+    print(f"\nCalling retrieve() for query: '{query}'...")
     try:
-        provisions, top_score = pgvector_store.search(query, top_k=3)
-        print(f"\nTop Search Score: {top_score:.4f}")
-        print(f"Retrieved {len(provisions)} provisions:")
-        for idx, p in enumerate(provisions):
-            print(f"\n[{idx+1}] Law: {p['law']} (Score/Similarity: {p.get('similarity', 0.0):.4f})")
-            print(f"    Authority: {p['authority']}")
-            print(f"    Contact: {p.get('authority_contact', '')}")
-            print(f"    Provision snippet: {p['provision'][:300].strip()}...")
-            print("-" * 60)
+        retrieval = retrieve(query)
+        print(f"\nRetrieval Source: {retrieval.source}")
+        print(f"Top Score: {retrieval.top_score:.4f}")
+        print(f"Total provisions retrieved: {len(retrieval.provisions)}")
+        
+        print("\n--- Provisions List ---")
+        for idx, p in enumerate(retrieval.provisions):
+            print(f"\n[{idx+1}] Law: {p['law']} (Source: {p.get('source', 'unknown')})")
+            print(f"    Provision snippet: {p['provision'][:150].strip()}...")
+            
     except Exception as e:
-        print("❌ Search failed:", e)
+        print("❌ Retrieval failed:", e)
 
 if __name__ == "__main__":
     run_test()
