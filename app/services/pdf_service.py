@@ -55,12 +55,36 @@ def build_letter_pdf(
     pdf.cell(0, 6, f"Reference: {reference_id}", new_x="LMARGIN", new_y="NEXT")
     pdf.set_x(12)
     pdf.cell(0, 6, f"Date: {generated_date}", new_x="LMARGIN", new_y="NEXT")
-    if law_reference:
+
+    def _has_non_latin(text: str) -> bool:
+        # any character outside latin-1 (e.g. Urdu/Arabic) would crash Helvetica
+        try:
+            text.encode("latin-1")
+            return False
+        except UnicodeEncodeError:
+            return True
+
+    def _meta_line(label_latin: str, value: str) -> None:
+        """Render 'Label: value'. If the value contains Urdu, draw the value with
+        the Nastaliq font (RTL-shaped) so it never crashes Helvetica."""
+        if not value:
+            return
         pdf.set_x(12)
-        pdf.cell(0, 6, f"Law: {law_reference}", new_x="LMARGIN", new_y="NEXT")
-    if authority:
-        pdf.set_x(12)
-        pdf.multi_cell(0, 6, f"Authority: {authority}")
+        if has_urdu_font and _has_non_latin(value):
+            pdf.set_font("Helvetica", "", 10)
+            pdf.cell(0, 6, f"{label_latin}:", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_x(12)
+            pdf.set_font("Nastaliq", "", 11)
+            pdf.set_text_shaping(use_shaping_engine=True, direction=TextDirection.RTL, script="arab", language="urd")
+            pdf.multi_cell(0, 8, value, align="R", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_shaping(False)
+            pdf.set_font("Helvetica", "", 10)
+        else:
+            pdf.set_font("Helvetica", "", 10)
+            pdf.multi_cell(0, 6, f"{label_latin}: {value}")
+
+    _meta_line("Law", law_reference)
+    _meta_line("Authority", authority)
     pdf.ln(2)
     pdf.set_draw_color(212, 175, 55)
     pdf.line(12, pdf.get_y(), 198, pdf.get_y())
