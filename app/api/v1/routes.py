@@ -74,20 +74,25 @@ def letter_pdf(req: LetterPdfRequest) -> Response:
     s = get_settings()
     from datetime import date
 
-    pdf_bytes = build_letter_pdf(
-        reference_id=req.reference_id,
-        complaint_letter=req.complaint_letter,
-        law_reference=req.law_reference,
-        authority=req.responsible_authority,
-        db_version=s.db_version,
-        generated_date=date.today().isoformat(),
-    )
+    try:
+        pdf_bytes = build_letter_pdf(
+            reference_id=req.reference_id,
+            complaint_letter=req.complaint_letter,
+            law_reference=req.law_reference,
+            authority=req.responsible_authority,
+            db_version=s.db_version,
+            generated_date=date.today().isoformat(),
+        )
+    except Exception as exc:  # never return a naked 500 (it strips CORS headers)
+        import logging
+        logging.getLogger("haqdar.pdf").exception("PDF generation failed: %s", exc)
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}") from exc
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f'attachment; filename="{req.reference_id}.pdf"'},
     )
-
 
 @router.get("/stats", tags=["dashboard"])
 def stats() -> dict:
