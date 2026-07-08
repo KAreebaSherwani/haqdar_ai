@@ -1,6 +1,6 @@
 """API v1 routers: /analyze, /rights, /stats, /health."""
 
-from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from pydantic import BaseModel
 
@@ -32,7 +32,9 @@ async def analyze(req: ComplaintRequest) -> AnalyzeResponse | NeedsMoreInfoRespo
     """Citizen complaint -> full legal action package."""
     complaint = _guard(req.complaint)
     try:
-        return await analyze_complaint(complaint, req.district, req.name, req.incident_date, req.language, req.letter_language)
+        return await analyze_complaint(
+            complaint, req.district, req.name, req.incident_date, req.language, req.letter_language
+        )
     except HTTPException:
         raise
     except Exception:
@@ -128,7 +130,7 @@ async def whatsapp_webhook(request: Request) -> Response:
         num_media = int(form.get("NumMedia") or "0")
     except (TypeError, ValueError):
         num_media = 0
-        
+
     if num_media > 0 and not body:
         media_url = form.get("MediaUrl0")
         media_type = form.get("MediaContentType0") or "audio/ogg"
@@ -138,8 +140,10 @@ async def whatsapp_webhook(request: Request) -> Response:
                 from app.core.ai_client import transcribe_audio
 
                 s = get_settings()
-                auth = (getattr(s, "twilio_account_sid", "") or "",
-                        getattr(s, "twilio_auth_token", "") or "")
+                auth = (
+                    getattr(s, "twilio_account_sid", "") or "",
+                    getattr(s, "twilio_auth_token", "") or "",
+                )
                 async with httpx.AsyncClient(timeout=30) as hc:
                     r = await hc.get(media_url, auth=auth if auth[0] else None)
                     r.raise_for_status()
@@ -147,10 +151,13 @@ async def whatsapp_webhook(request: Request) -> Response:
                 body = await transcribe_audio(audio_bytes, mime_type=media_type)
             except Exception:
                 from xml.sax.saxutils import escape as _esc
-                msg = ("معذرت، آواز سمجھ نہیں آئی۔ براہ کرم اپنا مسئلہ ٹائپ کریں۔\n"
-                       "Sorry, I couldn't understand the voice note. Please type your problem.")
+
+                msg = (
+                    "معذرت، آواز سمجھ نہیں آئی۔ براہ کرم اپنا مسئلہ ٹائپ کریں۔\n"
+                    "Sorry, I couldn't understand the voice note. Please type your problem."
+                )
                 twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response><Message><Body>{_esc(msg)}</Body></Message></Response>"
-                return Response(content=twiml, media_type="application/xml")
+                return Response(content=twiml, media_type="text/xml; charset=utf-8")
 
     # Await the pipeline handler cleanly
     reply = await whatsapp_bot.handle_message(sender, body)
@@ -186,21 +193,22 @@ async def whatsapp_webhook(request: Request) -> Response:
     if media_url_out:
         msg += f"<Media>{escape(str(media_url_out))}</Media>"
     msg += "</Message>"
-    
+
     twiml = f"<?xml version='1.0' encoding='UTF-8'?><Response>{msg}</Response>"
-    return Response(content=twiml, media_type="application/xml")
+    return Response(content=twiml, media_type="text/xml; charset=utf-8")
 
 
 @router.post("/transcribe", tags=["core"])
-async def transcribe(audio: UploadFile = File(...)) -> dict:
-    """Transcribe an uploaded voice recording (Urdu/English) to text via Gemini."""
+async def transcribe(audio: UploadFile = File(...), language: str = Form("Urdu")) -> dict:
+    """Transcribe an uploaded voice recording to text via Gemini."""
     try:
         data = await audio.read()
         if not data:
             raise HTTPException(status_code=400, detail="Empty audio")
         from app.core.ai_client import transcribe_audio
+
         mime = audio.content_type or "audio/ogg"
-        text = await transcribe_audio(data, mime_type=mime)
+        text = await transcribe_audio(data, mime_type=mime, language=language)
         return {"text": text}
     except HTTPException:
         raise
@@ -208,19 +216,30 @@ async def transcribe(audio: UploadFile = File(...)) -> dict:
         raise HTTPException(
             status_code=503,
             detail="آواز کو متن میں تبدیل نہیں کیا جا سکا۔ براہ کرم ٹائپ کریں۔ "
-                   "(Could not transcribe audio — please type instead.)",
+            "(Could not transcribe audio — please type instead.)",
         ) from None
 
 
 @router.get("/health", tags=["ops"])
 def health() -> dict:
     """Liveness check — also the keep-alive ping target."""
+    import os
+    from app.core import pgvector_store
+
     s = get_settings()
+    gcp_creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    gcp_creds_exists = os.path.exists(gcp_creds_path) if gcp_creds_path else False
+
     return {
         "status": "online",
         "service": s.app_name,
         "primary_model": s.primary_model,
         "fallback_model": s.fallback_model,
         "vector_store_ready": vector_store.is_ready(),
+        "pgvector_store_ready": pgvector_store.is_ready(),
+        "pgvector_store_error": pgvector_store.get_init_error(),
+        "gemini_api_key_configured": bool(s.gemini_api_key),
+        "gcp_credentials_path": gcp_creds_path,
+        "gcp_credentials_exists": gcp_creds_exists,
         "db_version": s.db_version,
     }

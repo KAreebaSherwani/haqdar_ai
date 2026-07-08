@@ -15,11 +15,11 @@ LAW_PROVISIONS: list[dict] = [
         "id": "police-receipt",
         "domain": "police",
         "law": "Code of Criminal Procedure, 1898",
-        "provision": "Under Section 102 and Section 165 of the Code of Criminal Procedure (CrPC), any police officer seizing property must document it and provide a receipt/inventory. Furthermore, police officers cannot collect cash fines directly on the spot; an official written challan must be issued.",
+        "provision": "Under Sections 523 and 550 of the Code of Criminal Procedure (CrPC), any police officer seizing property alleged or suspected to be stolen, or found under circumstances creating suspicion of an offence, must report the seizure to a Magistrate, who orders its disposal or delivery. Furthermore, police officers cannot collect cash fines directly on the spot; an official written challan must be issued.",
         "authority": "District Police Officer (DPO) of the citizen's district; escalation to Regional Police Officer (RPO).",
         "authority_contact": "DPO Office (district HQ). Punjab Police complaint helpline: 8787.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "police-detention",
@@ -29,7 +29,7 @@ LAW_PROVISIONS: list[dict] = [
         "authority": "District Police Officer (DPO); Provincial Police Complaint Authority.",
         "authority_contact": "DPO Office (district HQ). Punjab Police helpline: 8787.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "consumer-overcharge",
@@ -39,7 +39,7 @@ LAW_PROVISIONS: list[dict] = [
         "authority": "District Consumer Court / Consumer Protection Council.",
         "authority_contact": "District Consumer Court (district courts complex). Punjab portal: dpc.punjab.gov.pk.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "rti-access",
@@ -49,7 +49,7 @@ LAW_PROVISIONS: list[dict] = [
         "authority": "Pakistan Information Commission (PIC), Islamabad.",
         "authority_contact": "Pakistan Information Commission: rti.gov.pk.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "rti-access-punjab",
@@ -59,37 +59,37 @@ LAW_PROVISIONS: list[dict] = [
         "authority": "Punjab Information Commission.",
         "authority_contact": "Punjab Information Commission: pic.punjab.gov.pk.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "labour-wages",
         "domain": "labour",
         "law": "Minimum Wages Ordinance, 1961 & Standing Orders Ordinance, 1968",
-        "provision": "Under the Minimum Wages Ordinance 1961 and the Standing Orders Ordinance 1968, every employer must provide a formal appointment letter. Workers are legally entitled to receive at least the government-notified minimum wage, to be paid timely without unauthorized deductions.",
+        "provision": "Under Section 2-A of the Industrial and Commercial Employment (Standing Orders) Ordinance 1968, every employer must provide a formal appointment letter showing terms and conditions of service at the time of appointment. Under the Minimum Wages Ordinance 1961, workers are legally entitled to receive at least the government-notified minimum wage, paid timely without unauthorized deductions.",
         "authority": "Provincial Labour Department / Labour Court.",
         "authority_contact": "Punjab Labour Department: labour.punjab.gov.pk. District Labour Office.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "health-emergency",
         "domain": "healthcare",
         "law": "Punjab Healthcare Commission Act, 2010",
-        "provision": "Under Section 19 of the Punjab Healthcare Commission Act 2010 and the Charter of Patient Rights, patients are entitled to immediate life-saving emergency medical treatment. A healthcare establishment cannot refuse to provide stabilizing emergency care.",
+        "provision": "Under Section 4 of the Punjab Healthcare Commission Act 2010 (powers to enquire into malpractice and failures) and the Charter of Patient Rights enforced by the Commission, patients are entitled to immediate life-saving emergency medical treatment. A healthcare establishment cannot refuse to provide stabilizing emergency care.",
         "authority": "Punjab Healthcare Commission (PHC).",
         "authority_contact": "PHC helpline: 0800-00742. Complaint portal: phc.org.pk.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "traffic-challan",
         "domain": "traffic",
         "law": "Provincial Motor Vehicles Ordinance, 1965",
-        "provision": "Under Section 116-A of the Provincial Motor Vehicles Ordinance 1965, a traffic police officer must issue a specific ticket (Form J challan) detailing the exact traffic violation. Fines cannot be collected in cash on the spot and must be deposited in a designated bank.",
+        "provision": "Under Section 116-A (Ticketing system) of the Provincial Motor Vehicles Ordinance 1965, a traffic police officer must issue a formal challan/ticket detailing the exact traffic violation. Fines cannot be collected in cash on the spot and must be deposited in a designated bank.",
         "authority": "Chief Traffic Officer (CTO) / SSP Traffic of the district.",
         "authority_contact": "District Traffic Police office. Punjab Traffic helpline: 1124 (where available).",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "municipal-services",
@@ -99,27 +99,27 @@ LAW_PROVISIONS: list[dict] = [
         "authority": "Municipal Committee / Local Government complaint cell.",
         "authority_contact": "District Municipal Committee office. Punjab LG portal: lgcd.punjab.gov.pk.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "utility-billing",
         "domain": "utility",
         "law": "NEPRA Act, 1997 & OGRA Ordinance, 2002",
-        "provision": "Under the NEPRA Consumer Service Manual and OGRA dispute resolution regulations, electricity and gas consumers have the right to dispute inaccurate, excessive, or estimated bills. Disputed amounts may be stayed until the regulatory complaint is resolved.",
+        "provision": "Under Section 21(d) of the NEPRA Act 1997 (Consumer Service Manual) and Section 11 of the OGRA Ordinance 2002 (complaints resolution), electricity and gas consumers have the right to dispute inaccurate, excessive, or estimated bills. Disputed amounts may be stayed until the regulatory complaint is resolved.",
         "authority": "Relevant utility company complaint cell; escalation to NEPRA (electricity) or OGRA (gas), or WASA for water.",
         "authority_contact": "NEPRA: nepra.org.pk. OGRA: ogra.org.pk. Local utility billing office.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "education-fees",
         "domain": "education",
-        "law": "The Punjab Private Educational Institutions Ordinance, 1984 (Amended)",
-        "provision": "Under the Punjab Private Educational Institutions rules, private schools cannot arbitrarily increase tuition fees beyond the strictly enforced 5% annual ceiling without explicit regulatory approval, nor can they compel parents to buy uniforms/books from specific vendors.",
+        "law": "The Punjab Private Educational Institutions (Promotion and Regulation) Ordinance, 1984 (as amended 2015)",
+        "provision": "Under the Punjab Private Educational Institutions Ordinance 1984 (as amended by the 2015 Amendment Ordinance), private schools cannot arbitrarily increase tuition fees beyond the strictly enforced 5% annual ceiling without explicit regulatory approval, nor can they compel parents to buy uniforms or books from specific vendors.",
         "authority": "District Education Authority / Private Education Provider Registration & Information System (PEPRIS).",
         "authority_contact": "Punjab PEPRIS: pepris.pesrp.edu.pk. District Education Authority office.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
     {
         "id": "women-harassment",
@@ -129,7 +129,7 @@ LAW_PROVISIONS: list[dict] = [
         "authority": "Workplace inquiry committee; Federal/Provincial Ombudsperson for Harassment.",
         "authority_contact": "Punjab Women Helpline: 1043. Federal helpline: 1099.",
         "source": "AI",
-        "last_reviewed": "2026-06-17",
+        "last_reviewed": "2026-06-18",
     },
 ]
 
@@ -141,7 +141,7 @@ def all_law_names() -> set[str]:
 def build_context(provisions: list[dict]) -> str:
     lines = ["VERIFIED PAKISTANI LAW REFERENCE — cite ONLY from these entries:\n"]
     for p in provisions:
-        source_tag = p.get('source', 'AI')
+        source_tag = p.get("source", "AI")
         lines.append(
             f"- Law: {p['law']}\n"
             f"  Provision: {p['provision']}\n"
@@ -150,7 +150,10 @@ def build_context(provisions: list[dict]) -> str:
             f"  Source: {source_tag}\n"
         )
     lines.append(
-        "\nGUIDANCE: clear match -> confidence 'high'. Partial match or missing facts -> "
+        "\nNOTE ON RETRIEVAL: The provisions above were selected using semantic (cosine"
+        " similarity) search. They may not all be directly applicable to the complaint."
+        " Use your own judgment to determine which actually match the situation."
+        "\n\nGUIDANCE: clear match -> confidence 'high'. Partial match or missing facts -> "
         "'medium'. Outside these provisions (criminal violence, property/family disputes) -> "
         "'needs_verification' and recommend a lawyer or district free legal aid committee. "
         "NEVER invent a law name or section number."
